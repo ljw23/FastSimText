@@ -1,0 +1,4 @@
+{
+    "python.formatting.provider": "yapf",
+    "python.pythonPath": "/home/liujunwen/git_resources/FastSimText/virtual_python/bin/python"
+}
