@@ -1,6 +1,6 @@
 # FastSimText
 
-## 运行方式：
+## 运行方式
 
 1. data文件中放问句文件（车名.txt），标准句文件（零件名.txt）
 2. python SimTFIDF.py
@@ -9,7 +9,7 @@
 
 1. tfidf分字，分词
 
-# 代码结构
+## 代码结构
 
 ```
 .
