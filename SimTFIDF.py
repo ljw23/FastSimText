@@ -10,19 +10,22 @@
 # here put the import lib
 import sklearn as sk
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.pipeline import Pipeline
-from scipy.sparse import csr_matrix
 import pandas as pd
 import os
 import numpy as np
 from copy import deepcopy
+import jieba
 
 
 class SimTFIDF(object):
-    def __init__(self, candidate_path, queryset_path=None):
+    def __init__(self, candidate_path, queryset_path=None,tokenizer='char'):
         '''
         read candidate sentences, build tfidf model
         '''
+        if tokenizer == 'char':
+            self.tokenizer = self.char_tokenizer
+        elif tokenizer == 'word':
+            self.tokenizer = self.word_tokenizer
 
         self.candidate = [
             sentence.strip() for sentence in open(candidate_path, 'r')
@@ -39,7 +42,9 @@ class SimTFIDF(object):
     def getSimilaritySearch(self,
                             result_path='result.xlsx',
                             candidate=None,
-                            query=None):
+                            query=None,
+                            top_k=5,
+                            ):
         '''
         1. 根据tfidf模型生成向量计算相似度
         2.  根据相似度结果生成最终搜索结果
@@ -53,7 +58,8 @@ class SimTFIDF(object):
             return query_vec.dot(candidate_vec.T)
 
         def most_sim(similarity):
-            return np.asarray(similarity.argmax(axis=1)).squeeze(), similarity.max(axis=1).toarray().squeeze()
+            return np.asarray(similarity.argmax(
+                axis=1)).squeeze(), similarity.max(axis=1).toarray().squeeze()
 
         if query:
             query_vec = self.tfidf_model.transform(query)
@@ -77,24 +83,28 @@ class SimTFIDF(object):
         max_similar_sentences = [candidate[index] for index in most_sim_index]
 
         df = pd.DataFrame(pd.Series(query), columns=['query'])
-        df['similarity'] = pd.Series(max_sim_value)
+
         df['similar sentence'] = pd.Series(max_similar_sentences)
+        df['similarity'] = pd.Series(max_sim_value)
 
         print(df.head())
 
         df.to_excel(os.path.join('data', result_path), index=None)
 
     def tfidf_build(self):
-        tfidf_vectorizer = TfidfVectorizer(tokenizer=self._tokenizer,
+        tfidf_vectorizer = TfidfVectorizer(tokenizer=self.tokenizer,
                                            stop_words=None)
         self.tfidf_model = tfidf_vectorizer.fit(self.corpus)
         self.candidate_vec = self.tfidf_model.transform(self.candidate)
         if self.query:
             self.query_vec = self.tfidf_model.transform(self.query)
 
-    def _tokenizer(self, sentence):
+    def char_tokenizer(self, sentence):
         for word in sentence:
             yield word
+
+    def word_tokenizer(self, sentence):
+        return jieba.cut(sentence)
 
 
 if __name__ == '__main__':
