@@ -1,3 +1,4 @@
 virtual_python
+data/result.xlsx
 .vscode/*
 data/*xlsx
