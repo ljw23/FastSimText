@@ -15,6 +15,7 @@ import os
 import numpy as np
 from copy import deepcopy
 import jieba
+from sim_utils.Similarity import Similarity
 
 
 class SimTFIDF(object):
@@ -49,18 +50,6 @@ class SimTFIDF(object):
         1. 根据tfidf模型生成向量计算相似度
         2.  根据相似度结果生成最终搜索结果
         '''
-        def similarity_calculation(query_vec, candidate_vec):
-            '''
-            query_vec: m1*n
-            candidate_vec: m2 *n
-            return:  m1*m2
-            '''
-            return query_vec.dot(candidate_vec.T)
-
-        def most_sim(similarity):
-            return np.asarray(similarity.argmax(
-                axis=1)).squeeze(), similarity.max(axis=1).toarray().squeeze()
-
         if query:
             query_vec = self.tfidf_model.transform(query)
         elif self.query:
@@ -77,15 +66,31 @@ class SimTFIDF(object):
         else:
             raise ValueError("No candidate")
 
-        similarity = similarity_calculation(query_vec, candidate_vec)
-        most_sim_index, max_sim_value = most_sim(similarity)
+        similarity = Similarity.similarity_calculation(query_vec, candidate_vec)
+        # most_sim_index, max_sim_value = Similarity.most_sim(similarity)
 
-        max_similar_sentences = [candidate[index] for index in most_sim_index]
+        topk_sim_index, topk_sim_value = Similarity.topk_sim(similarity,topk=top_k)
+
+        topk_sim_sentences = []
+        for topk_sim_index_row in topk_sim_index:
+            _candidate = []
+            for index in topk_sim_index_row:
+                try:
+                    if index > 0:
+                        _candidate.append(candidate[index] )
+                    else:
+                        _candidate.append(None)
+                except Exception as e:
+                    print()
+            topk_sim_sentences.append(_candidate)
+
+        # topk_sim_sentences = [[candidate[index] for index in topk_sim_index_row] for topk_sim_index_row in topk_sim_index]
 
         df = pd.DataFrame(pd.Series(query), columns=['query'])
 
-        df['similar sentence'] = pd.Series(max_similar_sentences)
-        df['similarity'] = pd.Series(max_sim_value)
+        for i in range(top_k):
+            df['%d th similar sentence'%i] = pd.Series([sentences[i]for sentences in topk_sim_sentences])
+            df['%d th similarity'%i] = pd.Series(topk_sim_value[:, i])
 
         print(df.head())
 

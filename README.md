@@ -19,6 +19,8 @@
 │   └── 零件名.txt
 ├── README.md
 ├── requirements.txt
-└── SimTFIDF.py
+├── SimTFIDF.py
+└── sim_utils
+    └── Similarity.py
 ```
 
