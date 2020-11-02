@@ -43,7 +43,7 @@ class Similarity(object):
             '''
             row_index = row.indices
             row_value = row.data
-            _sorted_row_index = np.argsort(row_value)[-1:]
+            _sorted_row_index = np.argsort(row_value)[::-1]
             sorted_index = row_index[_sorted_row_index]
             sorted_value = row_value[_sorted_row_index]
             return sorted_index, sorted_value

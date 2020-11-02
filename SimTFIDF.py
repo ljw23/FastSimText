@@ -19,7 +19,7 @@ from sim_utils.Similarity import Similarity
 
 
 class SimTFIDF(object):
-    def __init__(self, candidate_path, queryset_path=None,tokenizer='char'):
+    def __init__(self, candidate_path, queryset_path=None, tokenizer='char'):
         '''
         read candidate sentences, build tfidf model
         '''
@@ -40,12 +40,13 @@ class SimTFIDF(object):
 
         self.tfidf_build()
 
-    def getSimilaritySearch(self,
-                            result_path='result.xlsx',
-                            candidate=None,
-                            query=None,
-                            top_k=5,
-                            ):
+    def getSimilaritySearch(
+        self,
+        result_path='result.xlsx',
+        candidate=None,
+        query=None,
+        top_k=5,
+    ):
         '''
         1. 根据tfidf模型生成向量计算相似度
         2.  根据相似度结果生成最终搜索结果
@@ -66,10 +67,12 @@ class SimTFIDF(object):
         else:
             raise ValueError("No candidate")
 
-        similarity = Similarity.similarity_calculation(query_vec, candidate_vec)
+        similarity = Similarity.similarity_calculation(query_vec,
+                                                       candidate_vec)
         # most_sim_index, max_sim_value = Similarity.most_sim(similarity)
 
-        topk_sim_index, topk_sim_value = Similarity.topk_sim(similarity,topk=top_k)
+        topk_sim_index, topk_sim_value = Similarity.topk_sim(similarity,
+                                                             topk=top_k)
 
         topk_sim_sentences = []
         for topk_sim_index_row in topk_sim_index:
@@ -77,7 +80,7 @@ class SimTFIDF(object):
             for index in topk_sim_index_row:
                 try:
                     if index > 0:
-                        _candidate.append(candidate[index] )
+                        _candidate.append(candidate[index])
                     else:
                         _candidate.append(None)
                 except Exception as e:
@@ -89,8 +92,9 @@ class SimTFIDF(object):
         df = pd.DataFrame(pd.Series(query), columns=['query'])
 
         for i in range(top_k):
-            df['%d th similar sentence'%i] = pd.Series([sentences[i]for sentences in topk_sim_sentences])
-            df['%d th similarity'%i] = pd.Series(topk_sim_value[:, i])
+            df['%d th similar sentence' % i] = pd.Series(
+                [sentences[i] for sentences in topk_sim_sentences])
+            df['%d th similarity' % i] = pd.Series(topk_sim_value[:, i])
 
         print(df.head())
 
