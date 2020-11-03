@@ -16,9 +16,10 @@ import numpy as np
 from copy import deepcopy
 import jieba
 from sim_utils.Similarity import Similarity
+from sim_utils.Sim_interface import   Sim
 
 
-class SimTFIDF(object):
+class SimTFIDF(Sim):
     def __init__(self, candidate_path, queryset_path=None, tokenizer='char'):
         '''
         read candidate sentences, build tfidf model
@@ -38,9 +39,9 @@ class SimTFIDF(object):
             ]
             self.corpus.extend(self.query)
 
-        self.tfidf_build()
+        self.sim_build()
 
-    def getSimilaritySearch(
+    def match_query_candidate(
         self,
         result_path='result.xlsx',
         candidate=None,
@@ -100,7 +101,7 @@ class SimTFIDF(object):
 
         df.to_excel(os.path.join('data', result_path), index=None)
 
-    def tfidf_build(self):
+    def sim_build(self):
         tfidf_vectorizer = TfidfVectorizer(tokenizer=self.tokenizer,
                                            stop_words=None)
         self.tfidf_model = tfidf_vectorizer.fit(self.corpus)
@@ -115,7 +116,10 @@ class SimTFIDF(object):
     def word_tokenizer(self, sentence):
         return jieba.cut(sentence)
 
+    def search_query(self, query):
+        pass
+
 
 if __name__ == '__main__':
     sim = SimTFIDF(candidate_path='data/零件名.txt', queryset_path='data/车名.txt')
-    sim.getSimilaritySearch()
+    sim.match_query_candidate()
