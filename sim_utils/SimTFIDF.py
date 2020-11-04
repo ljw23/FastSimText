@@ -41,10 +41,11 @@ class SimTFIDF(Sim):
 
         self.sim_build()
 
+        self.candidate_vec = self.tfidf_model.transform(self.candidate)
+
     def match_query_candidate(
         self,
         result_path='result.xlsx',
-        candidate=None,
         query=None,
         top_k=5,
     ):
@@ -60,16 +61,8 @@ class SimTFIDF(Sim):
         else:
             raise ValueError("No query")
 
-        if candidate:
-            candidate_vec = self.tfidf_model.transform(candidate)
-        elif self.candidate:
-            candidate = self.candidate
-            candidate_vec = self.candidate_vec
-        else:
-            raise ValueError("No candidate")
-
         similarity = Similarity.similarity_calculation(query_vec,
-                                                       candidate_vec)
+                                                       self.candidate_vec)
         # most_sim_index, max_sim_value = Similarity.most_sim(similarity)
 
         topk_sim_index, topk_sim_value = Similarity.topk_sim(similarity,
@@ -116,10 +109,26 @@ class SimTFIDF(Sim):
     def word_tokenizer(self, sentence):
         return jieba.cut(sentence)
 
-    def search_query(self, query):
-        pass
+    def search_query(self, query,top_k=5):
+        query_vec = self.tfidf_model.transform([query])
 
+        similarity = Similarity.similarity_calculation(query_vec,
+                                                       self.candidate_vec)
+        # most_sim_index, max_sim_value = Similarity.most_sim(similarity)
+
+        topk_sim_index, topk_sim_value = Similarity.topk_sim(similarity,
+                                                             topk=top_k)
+        topk_sim_index = topk_sim_index.squeeze()
+        topk_sim_value = topk_sim_value.squeeze()
+
+        topk_sim_sentences = [self.candidate[index] for index in topk_sim_index]
+
+        ret = []
+        for sentence, sim_score in zip(topk_sim_sentences, topk_sim_value):
+            ret.append({"sentence":sentence, "score": sim_score})
+        return ret
 
 if __name__ == '__main__':
     sim = SimTFIDF(candidate_path='data/零件名.txt', queryset_path='data/车名.txt')
-    sim.match_query_candidate()
+    # sim.match_query_candidate()
+    print(sim.search_query("摩托车"))
