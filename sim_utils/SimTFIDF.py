@@ -109,7 +109,7 @@ class SimTFIDF(Sim):
     def word_tokenizer(self, sentence):
         return jieba.cut(sentence)
 
-    def search_query(self, query,top_k=5):
+    def search_query(self, query,top_k=5,similarity_min=0.6):
         query_vec = self.tfidf_model.transform([query])
 
         similarity = Similarity.similarity_calculation(query_vec,
@@ -125,7 +125,8 @@ class SimTFIDF(Sim):
 
         ret = []
         for sentence, sim_score in zip(topk_sim_sentences, topk_sim_value):
-            ret.append({"sentence":sentence, "score": sim_score})
+            if sim_score >= similarity_min:
+                ret.append({"sentence":sentence, "score": sim_score})
         return ret
 
 if __name__ == '__main__':
