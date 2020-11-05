@@ -118,8 +118,8 @@ class SimTFIDF(Sim):
 
         topk_sim_index, topk_sim_value = Similarity.topk_sim(similarity,
                                                              topk=top_k)
-        topk_sim_index = topk_sim_index.squeeze()
-        topk_sim_value = topk_sim_value.squeeze()
+        topk_sim_index = topk_sim_index[0]
+        topk_sim_value = topk_sim_value[0]
 
         topk_sim_sentences = [self.candidate[index] for index in topk_sim_index]
 
